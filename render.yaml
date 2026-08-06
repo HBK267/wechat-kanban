@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: wechat-kanban
+    runtime: node
+    plan: free
+    buildCommand: npm run build
+    startCommand: node server/index.js
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
