@@ -1,5 +1,21 @@
 import { JSONFilePreset } from 'lowdb/node'
 import { nanoid } from 'nanoid'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+// 数据持久化：若数据文件不存在（如首次挂载空白存储卷），则从种子文件恢复
+function ensureDataFile() {
+  const dataFile = path.join(__dirname, '../data/boards.json')
+  const seedFile = path.join(__dirname, '../seed-data/boards.json')
+  if (!fs.existsSync(dataFile) && fs.existsSync(seedFile)) {
+    fs.mkdirSync(path.dirname(dataFile), { recursive: true })
+    fs.copyFileSync(seedFile, dataFile)
+  }
+}
+ensureDataFile()
 
 const defaultColumns = [
   { id: 'col-todo', title: '待办' },
