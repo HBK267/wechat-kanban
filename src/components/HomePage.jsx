@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createBoard, deleteBoard, fetchBoards, postAction } from '../api'
 import ConfirmDialog from './ConfirmDialog'
 
@@ -22,6 +22,7 @@ export default function HomePage({ onOpen }) {
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState(null)
   const [confirmDel, setConfirmDel] = useState(null)
+  const [ownerFilter, setOwnerFilter] = useState('')
 
   // 项目名称/负责人/工作标题等使用非受控输入（defaultValue + ref），避免中文输入被中断
   const nameRef = useRef(null)
@@ -93,12 +94,24 @@ export default function HomePage({ onOpen }) {
 
   const progress = (b) => (b.total ? Math.round((b.done / b.total) * 100) : 0)
 
-  const largeBoards = boards.filter((b) => b.type !== 'small')
+  // 人员较为固定：收集所有出现过的负责人，用于筛选栏搜索建议
+  const persons = useMemo(() => {
+    const set = new Set()
+    boards.forEach((b) => {
+      if (b.owner) set.add(b.owner)
+    })
+    return [...set].sort((a, b) => a.localeCompare(b, 'zh'))
+  }, [boards])
+
+  const kw = ownerFilter.trim()
+  const matchOwner = (b) => !kw || (b.owner && b.owner.includes(kw))
+
+  const largeBoards = boards.filter((b) => b.type !== 'small' && matchOwner(b))
   const smallBoards = boards.filter(
-    (b) => b.type === 'small' && !(b.total > 0 && b.done === b.total)
+    (b) => b.type === 'small' && !(b.total > 0 && b.done === b.total) && matchOwner(b)
   )
   const historyBoards = boards.filter(
-    (b) => b.type === 'small' && b.total > 0 && b.done === b.total
+    (b) => b.type === 'small' && b.total > 0 && b.done === b.total && matchOwner(b)
   )
 
   const renderSection = (title, list, typeClass) =>
@@ -165,6 +178,27 @@ export default function HomePage({ onOpen }) {
         </button>
       </header>
 
+      <div className="home-filter">
+        <span className="home-filter-label">负责人</span>
+        <input
+          list="owner-suggestions"
+          className="owner-filter-input"
+          value={ownerFilter}
+          onChange={(e) => setOwnerFilter(e.target.value)}
+          aria-label="按负责人筛选"
+        />
+        <datalist id="owner-suggestions">
+          {persons.map((p) => (
+            <option key={p} value={p} />
+          ))}
+        </datalist>
+        {ownerFilter && (
+          <button className="btn-ghost" onClick={() => setOwnerFilter('')} type="button">
+            清除
+          </button>
+        )}
+      </div>
+
       {error && <div className="error-bar">加载失败：{error} • 自动重试中...</div>}
 
       <div className="home-content">
@@ -182,6 +216,17 @@ export default function HomePage({ onOpen }) {
             {renderSection('中大型项目', largeBoards, 'large')}
             {renderSection('小型工作安排', smallBoards, 'small')}
             {renderSection('历史工作', historyBoards, 'history')}
+            {kw &&
+              largeBoards.length === 0 &&
+              smallBoards.length === 0 &&
+              historyBoards.length === 0 && (
+                <div className="home-empty">
+                  <p>该负责人暂无项目或工作</p>
+                  <button className="btn-ghost" onClick={() => setOwnerFilter('')} type="button">
+                    清除筛选
+                  </button>
+                </div>
+              )}
           </div>
         )}
       </div>

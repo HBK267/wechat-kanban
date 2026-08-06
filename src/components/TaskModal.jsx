@@ -8,7 +8,8 @@ export default function TaskModal({ task, columnId, columns, simple, onClose, on
     assignee: task?.assignee || '',
     priority: task?.priority || 'medium',
     dueDate: task?.dueDate || '',
-    columnId: task?.columnId || columns[0]?.id,
+    // 新建时优先使用点击的列（columnId prop），避免总是落到第一列（待办）
+    columnId: task?.columnId || columnId || columns[0]?.id,
   })
 
   // 使用非受控输入（defaultValue + ref），避免 React 在
@@ -98,7 +99,7 @@ export default function TaskModal({ task, columnId, columns, simple, onClose, on
                   onChange={(e) => setFields((f) => ({ ...f, dueDate: e.target.value }))}
                 />
               </div>
-              {isEdit && !simple && (
+              {!simple && (
                 <div>
                   <label htmlFor="task-status">所处阶段</label>
                   <select
