@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { deleteLog, fetchLogDates, fetchLogs, saveLogs } from '../api'
+import ConfirmDialog from './ConfirmDialog'
 
 const WEEK = ['日', '一', '二', '三', '四', '五', '六']
 
@@ -34,6 +35,7 @@ export default function WorkLog() {
   const [error, setError] = useState(null)
   const [msg, setMsg] = useState(null)
   const [dates, setDates] = useState([])
+  const [confirmDel, setConfirmDel] = useState(null)
   const formRef = useRef(null)
   const saveTimer = useRef(null)
   // 记录最近一次有数据日期的人员列表，用于后一天自动预填
@@ -128,6 +130,7 @@ export default function WorkLog() {
   const handleRemoveRow = async (id) => {
     setRows((prev) => prev.filter((r) => r.id !== id))
     scheduleSave()
+    setConfirmDel(null)
     try {
       await deleteLog(date, id)
     } catch (err) {
@@ -246,7 +249,7 @@ export default function WorkLog() {
                     <button
                       type="button"
                       className="btn-icon danger"
-                      onClick={() => handleRemoveRow(row.id)}
+                      onClick={() => setConfirmDel(row.id)}
                       aria-label="删除此行"
                     >
                       删除
@@ -264,6 +267,17 @@ export default function WorkLog() {
             </div>
           )}
         </form>
+      )}
+
+      {confirmDel && (
+        <ConfirmDialog
+          open
+          title="删除记录"
+          message="确定删除这一行工作记录吗？\n删除后无法恢复。"
+          confirmText="确认删除"
+          onCancel={() => setConfirmDel(null)}
+          onConfirm={() => handleRemoveRow(confirmDel)}
+        />
       )}
     </div>
   )

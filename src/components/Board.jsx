@@ -5,6 +5,7 @@ import TaskModal from './TaskModal'
 import SmallBoard from './SmallBoard'
 import HistoryView from './HistoryView'
 import TerminalLog from './TerminalLog'
+import ConfirmDialog from './ConfirmDialog'
 
 export default function Board({ boardId, onBack, onNewProject }) {
   const {
@@ -22,6 +23,7 @@ export default function Board({ boardId, onBack, onNewProject }) {
 
   const [modalTask, setModalTask] = useState(null)
   const [copied, setCopied] = useState(false)
+  const [confirmTask, setConfirmTask] = useState(null)
 
   // 项目名称/负责人使用非受控输入（defaultValue + ref），
   // 避免 React 在中文输入法合成过程中重置 DOM 值
@@ -83,9 +85,9 @@ export default function Board({ boardId, onBack, onNewProject }) {
   }
 
   const handleDelete = async (taskId) => {
-    if (!window.confirm('确定删除这个任务吗？')) return
     await deleteTask(taskId)
     setModalTask(null)
+    setConfirmTask(null)
   }
 
   return (
@@ -161,7 +163,7 @@ export default function Board({ boardId, onBack, onNewProject }) {
                 onAdd={() => setModalTask({ columnId: col.id })}
                 onEdit={(task) => setModalTask({ task })}
                 onMove={(taskId, direction) => moveTask(taskId, direction)}
-                onDelete={handleDelete}
+                onDelete={(taskId) => setConfirmTask(taskId)}
               />
             )
           })}
@@ -177,7 +179,18 @@ export default function Board({ boardId, onBack, onNewProject }) {
           columns={board.columns}
           onClose={() => setModalTask(null)}
           onSave={handleSaveTask}
-          onDelete={modalTask.task ? () => handleDelete(modalTask.task.id) : null}
+          onDelete={modalTask.task ? () => setConfirmTask(modalTask.task.id) : null}
+        />
+      )}
+
+      {confirmTask && (
+        <ConfirmDialog
+          open
+          title="删除工作"
+          message="确定删除这个工作吗？\n删除后无法恢复。"
+          confirmText="确认删除"
+          onCancel={() => setConfirmTask(null)}
+          onConfirm={() => handleDelete(confirmTask)}
         />
       )}
     </div>

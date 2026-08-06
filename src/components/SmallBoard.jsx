@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import TaskModal from './TaskModal'
 import SmallDetail, { PRIORITY_LABEL, statusLabel } from './SmallDetail'
+import ConfirmDialog from './ConfirmDialog'
 
 export default function SmallBoard({ board, addTask, updateTask, deleteTask }) {
   const [modalStub, setModalStub] = useState(null)
   const [detailTask, setDetailTask] = useState(null)
+  const [confirmDel, setConfirmDel] = useState(null)
 
   const handleSave = async (stub, fields) => {
     if (stub?.id) {
@@ -16,10 +18,10 @@ export default function SmallBoard({ board, addTask, updateTask, deleteTask }) {
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('确定删除这个工作吗？')) return
     await deleteTask(id)
     setModalStub(null)
     setDetailTask(null)
+    setConfirmDel(null)
   }
 
   const handleStatusSave = async (fields) => {
@@ -81,7 +83,7 @@ export default function SmallBoard({ board, addTask, updateTask, deleteTask }) {
                 <button
                   className="btn-icon danger"
                   type="button"
-                  onClick={() => handleDelete(task.id)}
+                  onClick={() => setConfirmDel(task.id)}
                 >
                   删除
                 </button>
@@ -98,7 +100,7 @@ export default function SmallBoard({ board, addTask, updateTask, deleteTask }) {
           simple
           onClose={() => setModalStub(null)}
           onSave={handleSave}
-          onDelete={modalStub.task ? () => handleDelete(modalStub.task.id) : null}
+          onDelete={modalStub.task ? () => setConfirmDel(modalStub.task.id) : null}
         />
       )}
 
@@ -111,7 +113,18 @@ export default function SmallBoard({ board, addTask, updateTask, deleteTask }) {
             setModalStub({ task: detailTask })
             setDetailTask(null)
           }}
-          onDelete={() => handleDelete(detailTask.id)}
+          onDelete={() => setConfirmDel(detailTask.id)}
+        />
+      )}
+
+      {confirmDel && (
+        <ConfirmDialog
+          open
+          title="删除工作"
+          message="确定删除这个工作吗？\n删除后无法恢复。"
+          confirmText="确认删除"
+          onCancel={() => setConfirmDel(null)}
+          onConfirm={() => handleDelete(confirmDel)}
         />
       )}
     </div>

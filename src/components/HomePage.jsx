@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createBoard, deleteBoard, fetchBoards, postAction } from '../api'
+import ConfirmDialog from './ConfirmDialog'
 
 const DEFAULT_FIELDS = {
   name: '',
@@ -20,6 +21,7 @@ export default function HomePage({ onOpen }) {
   const [fields, setFields] = useState({ ...DEFAULT_FIELDS })
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState(null)
+  const [confirmDel, setConfirmDel] = useState(null)
 
   // 项目名称/负责人/工作标题等使用非受控输入（defaultValue + ref），避免中文输入被中断
   const nameRef = useRef(null)
@@ -79,12 +81,13 @@ export default function HomePage({ onOpen }) {
   }
 
   const handleDelete = async (id, name) => {
-    if (!window.confirm(`确定删除项目「${name}」吗？该项目的所有任务也会一并删除。`)) return
     try {
       await deleteBoard(id)
       await load()
+      setConfirmDel(null)
     } catch (err) {
       setError(err.message)
+      setConfirmDel(null)
     }
   }
 
@@ -124,7 +127,7 @@ export default function HomePage({ onOpen }) {
                   className="btn-icon danger"
                   onClick={(e) => {
                     e.stopPropagation()
-                    handleDelete(b.id, b.name)
+                    setConfirmDel(b)
                   }}
                   type="button"
                   aria-label={`删除项目 ${b.name}`}
@@ -318,6 +321,17 @@ export default function HomePage({ onOpen }) {
             </form>
           </div>
         </div>
+      )}
+
+      {confirmDel && (
+        <ConfirmDialog
+          open
+          title="删除项目"
+          message={`确定删除项目「${confirmDel.name}」吗？\n该项目的所有任务和工作信息也会一并删除，此操作不可恢复。`}
+          confirmText="确认删除"
+          onCancel={() => setConfirmDel(null)}
+          onConfirm={() => handleDelete(confirmDel.id, confirmDel.name)}
+        />
       )}
     </div>
   )
