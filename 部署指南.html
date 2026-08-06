@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>测绘一部管理看板 - 公网部署指南</title>
+<style>
+  :root { --blue:#2f6fed; --blue-dark:#1f53c4; --bg:#f4f7fb; --panel:#fff; --text:#1f2733; --muted:#6b7686; --line:#e3e9f2; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; font-family:-apple-system,"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+  .wrap { max-width:820px; margin:0 auto; padding:28px 20px 60px; }
+  h1 { font-size:24px; margin:0 0 6px; color:var(--blue-dark); }
+  .sub { color:var(--muted); font-size:14px; margin:0 0 24px; }
+  .notice { background:#fff7e6; border:1px solid #ffd591; border-left:5px solid #fa8c16; border-radius:10px; padding:14px 16px; margin:0 0 24px; font-size:14px; }
+  .notice b { color:#d46b08; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:22px 24px; margin-bottom:20px; }
+  .card h2 { font-size:17px; margin:0 0 14px; color:var(--blue-dark); display:flex; align-items:center; gap:10px; }
+  .step { display:flex; gap:14px; margin-bottom:18px; }
+  .step:last-child { margin-bottom:0; }
+  .num { flex:0 0 30px; height:30px; border-radius:50%; background:var(--blue); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:15px; }
+  .step-body { flex:1; }
+  .step-body p { margin:0 0 6px; }
+  .step-body p:last-child { margin-bottom:0; }
+  code { background:#eef2f9; border:1px solid #dde5f2; border-radius:6px; padding:2px 7px; font-size:13px; color:#2f6fed; font-family:"SFMono-Regular",Consolas,monospace; }
+  .cmd { background:#0f172a; color:#e2e8f0; border-radius:8px; padding:12px 14px; font-size:13px; font-family:"SFMono-Regular",Consolas,monospace; overflow-x:auto; margin:8px 0; white-space:pre; }
+  .url { display:inline-block; background:#e6f7ff; border:1px solid #91caff; color:#0958d9; border-radius:6px; padding:2px 9px; font-family:Consolas,monospace; font-size:13px; word-break:break-all; }
+  .tag { display:inline-block; background:#f0f5ff; color:#2f6fed; border:1px solid #adc6ff; border-radius:20px; padding:1px 10px; font-size:12px; margin-right:6px; }
+  .tip { background:#e6f7ff; border:1px solid #91caff; border-radius:8px; padding:10px 14px; font-size:13px; color:#0958d9; }
+  .footer { text-align:center; color:var(--muted); font-size:12px; margin-top:8px; }
+  a { color:var(--blue); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>测绘一部管理看板 · 公网部署指南</h1>
+  <p class="sub">把看板部署到免费云平台 Render，获得微信用户可直接点击的 HTTPS 链接</p>
+
+  <div class="notice">
+    <b>重要提醒：</b>Render 免费版实例在 15 分钟无访问后会休眠，休眠/重启后新增的数据可能丢失。若数据重要，建议部署稳定后升级到付费版（约 $7/月，含持久化磁盘）。本指南先帮你把免费版跑通。
+  </div>
+
+  <div class="card">
+    <h2>① 准备账号（约 5 分钟）</h2>
+    <div class="step">
+      <div class="num">1</div>
+      <div class="step-body">
+        <p>注册一个 <b>GitHub</b> 账号：<a href="https://github.com" target="_blank">github.com</a>（已有可跳过）</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <div class="step-body">
+        <p>注册一个 <b>Render</b> 账号：<a href="https://render.com" target="_blank">render.com</a>，注册时选择"Sign in with GitHub"直接绑定 GitHub</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>② 把项目代码推送到 GitHub</h2>
+    <div class="step">
+      <div class="num">1</div>
+      <div class="step-body">
+        <p>在 GitHub 新建一个仓库（写 <code>wechat-kanban</code>，Public 公开，不要勾选自动生成 README）</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <div class="step-body">
+        <p>在项目目录执行以下命令，把代码推送到你的仓库（把 <code>你的用户名</code> 换成你的 GitHub 用户名）：</p>
+        <div class="cmd">git branch -M main
+git remote add origin https://github.com/你的用户名/wechat-kanban.git
+git push -u origin main</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>③ 在 Render 一键部署（约 3 分钟）</h2>
+    <div class="step">
+      <div class="num">1</div>
+      <div class="step-body">
+        <p>登录 Render，点击 <code>New</code> → <code>Blueprint</code>（项目已内置 <code>render.yaml</code>，会自动识别）</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <div class="step-body">
+        <p>连接你的 GitHub 仓库 <code>wechat-kanban</code>，Render 会自动读取配置并开始构建</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">3</div>
+      <div class="step-body">
+        <p>等待 1~3 分钟构建完成，页面会显示服务地址，形如：</p>
+        <p><span class="url">https://wechat-kanban.onrender.com</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>④ 发到微信使用</h2>
+    <div class="step">
+      <div class="num">1</div>
+      <div class="step-body">
+        <p>用浏览器打开部署后的链接，确认能正常显示看板</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <div class="step-body">
+        <p>复制该链接，发送到微信好友或群聊</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">3</div>
+      <div class="step-body">
+        <p>微信用户点击链接即可进入看板，填写、编辑、同步所有信息</p>
+      </div>
+    </div>
+    <div class="tip">提示：首次打开如果较慢，是因为免费实例正在从休眠中唤醒，属正常现象。</div>
+  </div>
+
+  <div class="footer">本看板无登录认证，任何拿到链接的人都能编辑，请仅分享给协作成员。</div>
+</div>
+</body>
+</html>
