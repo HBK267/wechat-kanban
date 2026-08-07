@@ -197,26 +197,16 @@
   box-shadow: 0 4px 16px rgba(15, 181, 166, 0.12);
 }
 
-/* 历史工作：灰色系（已完成，不按负责人着色） */
+/* 历史工作：浅灰背景表示已归档，但边框/进度条/百分比仍保留负责人颜色，保证同一负责人上下颜色一致 */
 .project-card.history {
-  border-left-color: var(--text-dim);
   background: linear-gradient(135deg, rgba(139, 153, 173, 0.07), var(--bg-panel) 55%);
   opacity: 0.88;
 }
 
 .project-card.history:hover,
 .project-card.history:focus-visible {
-  border-color: var(--text-dim);
   opacity: 1;
   box-shadow: 0 4px 16px rgba(139, 153, 173, 0.14);
-}
-
-.project-card.history .project-progress {
-  color: var(--text-dim);
-}
-
-.project-card.history .project-bar-fill {
-  background: var(--text-dim);
 }
 
 /* 历史工作详情 */

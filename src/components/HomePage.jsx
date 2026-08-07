@@ -169,7 +169,7 @@ export default function HomePage({ onOpen }) {
             >
               <div className="project-card-top">
                 <span className="project-name">{b.name}</span>
-                <span className="project-progress" style={{ color: donePct >= 100 ? 'var(--success)' : 'var(--oc)' }}>{progress(b)}%</span>
+                <span className="project-progress" style={{ color: 'var(--oc)' }}>{progress(b)}%</span>
               </div>
               <div className="project-card-actions">
                 {b.owner && (
@@ -201,7 +201,7 @@ export default function HomePage({ onOpen }) {
               <div className="project-bar">
                 <div
                   className="project-bar-fill"
-                  style={{ width: `${donePct}%`, background: donePct >= 100 ? 'var(--success)' : 'var(--oc)' }}
+                  style={{ width: `${Math.max(donePct, 3)}%`, background: 'var(--oc)' }}
                 />
               </div>
             </div>
