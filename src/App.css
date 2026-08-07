@@ -66,6 +66,47 @@
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
 }
 
+/* 人员颜色图例：每个负责人一个彩色标签，点击可筛选 */
+.owner-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.5rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-elevated);
+  flex-shrink: 0;
+}
+
+.owner-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.65rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-panel);
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease, transform 0.05s ease;
+  white-space: nowrap;
+}
+
+.owner-chip:hover {
+  color: var(--oc);
+  border-color: var(--oc);
+}
+
+.owner-chip:active {
+  transform: translateY(1px);
+}
+
+.owner-chip.active {
+  color: var(--oc);
+  font-weight: 700;
+}
+
 .home-content {
   flex: 1;
   overflow-y: auto;
@@ -116,7 +157,7 @@
   text-align: left;
   background: var(--bg-panel);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
+  border-left: 3px solid var(--oc, var(--accent));
   padding: 1rem;
   border-radius: var(--radius);
   display: flex;
@@ -127,8 +168,8 @@
 
 .project-card:hover,
 .project-card:focus-visible {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-glow);
+  border-color: var(--oc, var(--accent));
+  box-shadow: 0 0 0 2px var(--oc-soft, var(--accent-glow));
   outline: none;
 }
 
@@ -136,31 +177,27 @@
   transform: translateY(1px);
 }
 
-/* 中大型项目：蓝色系 */
+/* 中大型项目：蓝色系背景（左侧色带随负责人着色） */
 .project-card.large {
-  border-left-color: var(--accent);
   background: linear-gradient(135deg, rgba(47, 107, 255, 0.06), var(--bg-panel) 55%);
 }
 
 .project-card.large:hover,
 .project-card.large:focus-visible {
-  border-color: var(--accent);
-  box-shadow: 0 4px 16px rgba(47, 107, 255, 0.12);
+  box-shadow: 0 4px 16px rgba(47, 107, 255, 0.1);
 }
 
-/* 小型工作安排：青色系 */
+/* 小型工作安排：青色系背景（左侧色带随负责人着色） */
 .project-card.small {
-  border-left-color: #0fb5a6;
   background: linear-gradient(135deg, rgba(15, 181, 166, 0.07), var(--bg-panel) 55%);
 }
 
 .project-card.small:hover,
 .project-card.small:focus-visible {
-  border-color: #0fb5a6;
-  box-shadow: 0 4px 16px rgba(15, 181, 166, 0.14);
+  box-shadow: 0 4px 16px rgba(15, 181, 166, 0.12);
 }
 
-/* 历史工作：灰色系 */
+/* 历史工作：灰色系（已完成，不按负责人着色） */
 .project-card.history {
   border-left-color: var(--text-dim);
   background: linear-gradient(135deg, rgba(139, 153, 173, 0.07), var(--bg-panel) 55%);
@@ -263,8 +300,19 @@
 }
 
 .project-owner {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   font-size: 0.8rem;
-  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.owner-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px var(--bg-panel);
 }
 
 .project-card-actions {
@@ -305,7 +353,7 @@
 
 .project-bar {
   height: 4px;
-  background: var(--bg-input);
+  background: var(--oc-soft, var(--bg-input));
   border-radius: 2px;
   overflow: hidden;
   margin-top: 0.25rem;

@@ -14,6 +14,36 @@ const DEFAULT_FIELDS = {
   taskDueDate: '',
 }
 
+// 人员专属配色：每位负责人按首次出现顺序分配专属颜色，
+// 用于卡片左侧色带、负责人圆点、进度条与进度百分比
+const OWNER_PALETTE = [
+  { main: '#2563eb', soft: 'rgba(37,99,235,0.12)' }, // 蓝
+  { main: '#0d9488', soft: 'rgba(13,148,136,0.12)' }, // 青
+  { main: '#ea580c', soft: 'rgba(234,88,12,0.12)' }, // 橙
+  { main: '#7c3aed', soft: 'rgba(124,58,237,0.12)' }, // 紫
+  { main: '#db2777', soft: 'rgba(219,39,119,0.12)' }, // 玫红
+  { main: '#16a34a', soft: 'rgba(22,163,74,0.12)' }, // 绿
+  { main: '#4f46e5', soft: 'rgba(79,70,229,0.12)' }, // 靛蓝
+  { main: '#ca8a04', soft: 'rgba(202,138,4,0.12)' }, // 琥珀
+  { main: '#0891b2', soft: 'rgba(8,145,178,0.12)' }, // 天青
+  { main: '#e11d48', soft: 'rgba(225,29,72,0.12)' }, // 红
+  { main: '#65a30d', soft: 'rgba(101,163,13,0.12)' }, // 橄榄
+  { main: '#9333ea', soft: 'rgba(147,51,234,0.12)' }, // 深紫
+]
+
+// 按首次出现顺序为负责人稳定分配颜色，保证不同人尽量不同色
+function buildOwnerColorMap(boards) {
+  const map = {}
+  let idx = 0
+  boards.forEach((b) => {
+    if (b.owner && !map[b.owner]) {
+      map[b.owner] = OWNER_PALETTE[idx % OWNER_PALETTE.length]
+      idx++
+    }
+  })
+  return map
+}
+
 export default function HomePage({ onOpen }) {
   const [boards, setBoards] = useState([])
   const [loading, setLoading] = useState(true)
@@ -106,6 +136,9 @@ export default function HomePage({ onOpen }) {
   const kw = ownerFilter.trim()
   const matchOwner = (b) => !kw || (b.owner && b.owner.includes(kw))
 
+  // 人员颜色映射：随项目列表稳定构建
+  const ownerColors = useMemo(() => buildOwnerColorMap(boards), [boards])
+
   const largeBoards = boards.filter((b) => b.type !== 'small' && matchOwner(b))
   const smallBoards = boards.filter(
     (b) => b.type === 'small' && !(b.total > 0 && b.done === b.total) && matchOwner(b)
@@ -119,10 +152,14 @@ export default function HomePage({ onOpen }) {
       <div className="home-section">
         <div className={`home-section-title ${typeClass}`}>{title}</div>
         <div className="project-grid">
-          {list.map((b) => (
+          {list.map((b) => {
+            const oc = ownerColors[b.owner] || OWNER_PALETTE[0]
+            const donePct = progress(b)
+            return (
             <div
               key={b.id}
               className={`project-card ${typeClass}`}
+              style={{ '--oc': oc.main, '--oc-soft': oc.soft }}
               role="button"
               tabIndex={0}
               onClick={() => onOpen(b.id)}
@@ -132,10 +169,15 @@ export default function HomePage({ onOpen }) {
             >
               <div className="project-card-top">
                 <span className="project-name">{b.name}</span>
-                <span className="project-progress">{progress(b)}%</span>
+                <span className="project-progress" style={{ color: donePct >= 100 ? 'var(--success)' : 'var(--oc)' }}>{progress(b)}%</span>
               </div>
               <div className="project-card-actions">
-                {b.owner && <div className="project-owner">负责人：{b.owner}</div>}
+                {b.owner && (
+                  <div className="project-owner">
+                    <span className="owner-dot" style={{ background: oc.main }} />
+                    <span style={{ color: oc.main }}>{b.owner}</span>
+                  </div>
+                )}
                 <button
                   className="btn-icon danger"
                   onClick={(e) => {
@@ -157,10 +199,14 @@ export default function HomePage({ onOpen }) {
                 </span>
               </div>
               <div className="project-bar">
-                <div className="project-bar-fill" style={{ width: `${progress(b)}%` }} />
+                <div
+                  className="project-bar-fill"
+                  style={{ width: `${donePct}%`, background: donePct >= 100 ? 'var(--success)' : 'var(--oc)' }}
+                />
               </div>
             </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     ) : null
@@ -198,6 +244,32 @@ export default function HomePage({ onOpen }) {
           </button>
         )}
       </div>
+
+      {persons.length > 0 && (
+        <div className="owner-legend">
+          {persons.map((p) => {
+            const oc = ownerColors[p] || OWNER_PALETTE[0]
+            const active = ownerFilter === p
+            return (
+              <button
+                key={p}
+                type="button"
+                className={`owner-chip ${active ? 'active' : ''}`}
+                style={{
+                  '--oc': oc.main,
+                  '--oc-soft': oc.soft,
+                  borderColor: active ? oc.main : 'var(--border)',
+                  background: active ? oc.soft : 'var(--bg-panel)',
+                }}
+                onClick={() => setOwnerFilter(ownerFilter === p ? '' : p)}
+              >
+                <span className="owner-dot" style={{ background: oc.main, boxShadow: 'none' }} />
+                {p}
+              </button>
+            )
+          })}
+        </div>
+      )}
 
       {error && <div className="error-bar">加载失败：{error} • 自动重试中...</div>}
 
