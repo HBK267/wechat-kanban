@@ -14,8 +14,8 @@ const DEFAULT_FIELDS = {
   taskDueDate: '',
 }
 
-// 人员专属配色：每位负责人按首次出现顺序分配专属颜色，
-// 用于卡片左侧色带、负责人圆点、进度条与进度百分比
+// 人员专属配色：每位负责人分配专属颜色，与项目列表顺序无关，
+// 保证同一负责人永远显示同一种颜色
 const OWNER_PALETTE = [
   { main: '#2563eb', soft: 'rgba(37,99,235,0.12)' }, // 蓝
   { main: '#0d9488', soft: 'rgba(13,148,136,0.12)' }, // 青
@@ -31,17 +31,30 @@ const OWNER_PALETTE = [
   { main: '#9333ea', soft: 'rgba(147,51,234,0.12)' }, // 深紫
 ]
 
-// 按首次出现顺序为负责人稳定分配颜色，保证不同人尽量不同色
-function buildOwnerColorMap(boards) {
-  const map = {}
-  let idx = 0
-  boards.forEach((b) => {
-    if (b.owner && !map[b.owner]) {
-      map[b.owner] = OWNER_PALETTE[idx % OWNER_PALETTE.length]
-      idx++
-    }
-  })
-  return map
+// 核心人员的固定配色：手动指定，保证好看且互不冲突，
+// 即使项目列表顺序变化，这些人的颜色也永远不变
+const OWNER_FIXED_COLORS = {
+  陈子凡: OWNER_PALETTE[0], // 蓝
+  龚彦瑞: OWNER_PALETTE[3], // 紫
+  汤喆跃: OWNER_PALETTE[2], // 橙
+  唐威: OWNER_PALETTE[1], // 青
+  肖童: OWNER_PALETTE[4], // 玫红
+  熊毅: OWNER_PALETTE[8], // 天青
+}
+
+// 将姓名映射为稳定的数组下标（不依赖列表顺序）
+function ownerColorIndex(name) {
+  let hash = 0
+  for (let i = 0; i < name.length; i++) {
+    hash = (hash * 31 + name.charCodeAt(i)) >>> 0
+  }
+  return hash % OWNER_PALETTE.length
+}
+
+// 按姓名固定分配颜色：核心人员用指定色，其余人员用姓名哈希，
+// 保证同一负责人无论何时、无论列表顺序如何都是同一种颜色
+function ownerColorOf(name) {
+  return OWNER_FIXED_COLORS[name] || OWNER_PALETTE[ownerColorIndex(name || '')]
 }
 
 export default function HomePage({ onOpen }) {
@@ -136,9 +149,6 @@ export default function HomePage({ onOpen }) {
   const kw = ownerFilter.trim()
   const matchOwner = (b) => !kw || (b.owner && b.owner.includes(kw))
 
-  // 人员颜色映射：随项目列表稳定构建
-  const ownerColors = useMemo(() => buildOwnerColorMap(boards), [boards])
-
   const largeBoards = boards.filter((b) => b.type !== 'small' && matchOwner(b))
   const smallBoards = boards.filter(
     (b) => b.type === 'small' && !(b.total > 0 && b.done === b.total) && matchOwner(b)
@@ -153,7 +163,7 @@ export default function HomePage({ onOpen }) {
         <div className={`home-section-title ${typeClass}`}>{title}</div>
         <div className="project-grid">
           {list.map((b) => {
-            const oc = ownerColors[b.owner] || OWNER_PALETTE[0]
+            const oc = ownerColorOf(b.owner)
             const donePct = progress(b)
             return (
             <div
@@ -248,7 +258,7 @@ export default function HomePage({ onOpen }) {
       {persons.length > 0 && (
         <div className="owner-legend">
           {persons.map((p) => {
-            const oc = ownerColors[p] || OWNER_PALETTE[0]
+            const oc = ownerColorOf(p)
             const active = ownerFilter === p
             return (
               <button
