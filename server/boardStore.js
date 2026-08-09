@@ -38,6 +38,7 @@ export function createDefaultBoard(id, meta = {}) {
     type: meta.type === 'small' ? 'small' : 'large',
     columns: defaultColumns.map((c) => ({ ...c })),
     tasks: [],
+    workloads: [],
     logs: [
       { time: now(), message: `项目创建成功 [${id}]`, type: 'system' },
     ],
@@ -187,4 +188,19 @@ export async function deleteBoard(boardId) {
   delete db.data.boards[boardId]
   await db.write()
   return { ok: true }
+}
+
+// 保存工作量统计（整体替换该项目的分项列表）
+export async function saveWorkloads(boardId, workloads) {
+  const board = await getBoard(boardId)
+  board.workloads = (Array.isArray(workloads) ? workloads : []).map((w) => ({
+    id: w.id || `workload-${nanoid(6).toUpperCase()}`,
+    item: (w.item || '').trim(),
+    unit: (w.unit || '').trim(),
+    quantity: Number(w.quantity) || 0,
+    unitPrice: Number(w.unitPrice) || 0,
+    note: (w.note || '').trim(),
+  }))
+  addLog(board, '更新工作量统计', 'info')
+  return saveBoard(board)
 }

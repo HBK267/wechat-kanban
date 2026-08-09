@@ -6,6 +6,7 @@ import SmallBoard from './SmallBoard'
 import HistoryView from './HistoryView'
 import TerminalLog from './TerminalLog'
 import ConfirmDialog from './ConfirmDialog'
+import WorkloadPanel from './WorkloadPanel'
 
 export default function Board({ boardId, onBack, onNewProject }) {
   const {
@@ -19,6 +20,7 @@ export default function Board({ boardId, onBack, onNewProject }) {
     moveTask,
     deleteTask,
     updateBoardMeta,
+    saveWorkloads,
   } = useBoard(boardId)
 
   const [modalTask, setModalTask] = useState(null)
@@ -149,25 +151,28 @@ export default function Board({ boardId, onBack, onNewProject }) {
           deleteTask={deleteTask}
         />
       ) : (
-        <div className="columns-container">
-          {board.columns.map((col, index) => {
-            const isFirst = index === 0
-            const isLast = index === board.columns.length - 1
-            return (
-              <Column
-                key={col.id}
-                column={col}
-                tasks={board.tasks.filter((t) => t.columnId === col.id)}
-                isFirst={isFirst}
-                isLast={isLast}
-                onAdd={() => setModalTask({ columnId: col.id })}
-                onEdit={(task) => setModalTask({ task })}
-                onMove={(taskId, direction) => moveTask(taskId, direction)}
-                onDelete={(taskId) => setConfirmTask(taskId)}
-              />
-            )
-          })}
-        </div>
+        <>
+          <WorkloadPanel board={board} saveWorkloads={saveWorkloads} />
+          <div className="columns-container">
+            {board.columns.map((col, index) => {
+              const isFirst = index === 0
+              const isLast = index === board.columns.length - 1
+              return (
+                <Column
+                  key={col.id}
+                  column={col}
+                  tasks={board.tasks.filter((t) => t.columnId === col.id)}
+                  isFirst={isFirst}
+                  isLast={isLast}
+                  onAdd={() => setModalTask({ columnId: col.id })}
+                  onEdit={(task) => setModalTask({ task })}
+                  onMove={(taskId, direction) => moveTask(taskId, direction)}
+                  onDelete={(taskId) => setConfirmTask(taskId)}
+                />
+              )
+            })}
+          </div>
+        </>
       )}
 
       <TerminalLog logs={board.logs} boardId={boardId} />

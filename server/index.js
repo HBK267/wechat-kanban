@@ -73,6 +73,9 @@ app.post('/api/board/:id/action', async (req, res) => {
       case 'updateBoardMeta':
         board = await store.updateBoardMeta(req.params.id, payload)
         break
+      case 'saveWorkloads':
+        board = await store.saveWorkloads(req.params.id, payload.workloads)
+        break
       default:
         return res.status(400).json({ error: 'UNKNOWN_ACTION' })
     }

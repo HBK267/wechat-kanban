@@ -66,6 +66,7 @@ export function useBoard(boardId) {
     moveTask: (taskId, direction) => mutate('moveTask', { taskId, direction }),
     deleteTask: (taskId) => mutate('deleteTask', { taskId }),
     updateBoardMeta: (fields) => mutate('updateBoardMeta', fields),
+    saveWorkloads: (workloads) => mutate('saveWorkloads', { workloads }),
     reload: () => load(false),
   }
 }
