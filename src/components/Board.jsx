@@ -151,7 +151,7 @@ export default function Board({ boardId, onBack, onNewProject }) {
           deleteTask={deleteTask}
         />
       ) : (
-        <>
+        <div className="board-scroll">
           <WorkloadPanel board={board} saveWorkloads={saveWorkloads} />
           <div className="columns-container">
             {board.columns.map((col, index) => {
@@ -172,7 +172,7 @@ export default function Board({ boardId, onBack, onNewProject }) {
               )
             })}
           </div>
-        </>
+        </div>
       )}
 
       <TerminalLog logs={board.logs} boardId={boardId} />

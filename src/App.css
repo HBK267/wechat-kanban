@@ -971,9 +971,15 @@
   gap: 1rem;
   padding: 1rem;
   overflow-x: auto;
-  overflow-y: hidden;
+  align-items: flex-start;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 中大型项目内容滚动区：工作量面板 + 看板列整体纵向滚动 */
+.board-scroll {
   flex: 1;
-  align-items: stretch;
+  min-height: 0;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -982,7 +988,6 @@
   flex-direction: column;
   flex-shrink: 0;
   width: min(88vw, 320px);
-  max-height: 100%;
   background: var(--bg-panel);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -1013,8 +1018,6 @@
 }
 
 .column-tasks {
-  flex: 1;
-  overflow-y: auto;
   padding: 0.75rem;
   display: flex;
   flex-direction: column;
