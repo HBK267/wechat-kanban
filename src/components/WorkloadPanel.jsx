@@ -2,20 +2,38 @@ import { useEffect, useRef, useState } from 'react'
 
 export default function WorkloadPanel({ board, saveWorkloads }) {
   const [workloads, setWorkloads] = useState([])
-  const saveTimer = useRef(null)
+  const pendingRef = useRef(null) // 待保存的最新数据
+  const timerRef = useRef(null)
+  const saveWorkloadsRef = useRef(saveWorkloads)
+  saveWorkloadsRef.current = saveWorkloads
 
   // 当外部数据刷新时同步本地（避免覆盖正在编辑的内容）
   useEffect(() => {
     setWorkloads(board.workloads || [])
   }, [board])
 
-  // 防抖自动保存
+  // 每 5 秒保存一次（节流），最后一次修改也会在节流周期内写入
   const scheduleSave = (next) => {
-    if (saveTimer.current) clearTimeout(saveTimer.current)
-    saveTimer.current = setTimeout(() => {
-      saveWorkloads(next)
-    }, 600)
+    pendingRef.current = next
+    if (timerRef.current) return
+    timerRef.current = setTimeout(() => {
+      timerRef.current = null
+      if (pendingRef.current) {
+        saveWorkloadsRef.current(pendingRef.current)
+        pendingRef.current = null
+      }
+    }, 5000)
   }
+
+  // 组件卸载时立即保存，避免页面切走导致数据丢失
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current)
+      if (pendingRef.current) {
+        saveWorkloadsRef.current(pendingRef.current)
+      }
+    }
+  }, [])
 
   const handleChange = (id, field, value) => {
     const next = workloads.map((item) =>
