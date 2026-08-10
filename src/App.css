@@ -1467,16 +1467,19 @@
 /* Terminal log */
 .terminal-log {
   flex-shrink: 0;
-  max-height: 40px;
+  max-height: 96px;
   overflow-y: auto;
-  padding: 0.3rem 0.75rem;
+  padding: 0.4rem 0.75rem;
   background: var(--bg-elevated);
   border-top: 1px solid var(--border);
   font-family: var(--font-mono);
-  font-size: 0.62rem;
-  line-height: 1.4;
-  white-space: nowrap;
-  overflow-x: hidden;
+  font-size: 0.66rem;
+  line-height: 1.5;
+  scrollbar-width: thin;
+}
+
+.terminal-log:hover {
+  max-height: 220px;
 }
 
 .log-line {
@@ -1538,7 +1541,11 @@
   }
 
   .terminal-log {
-    max-height: 36px;
+    max-height: 80px;
+  }
+
+  .terminal-log:hover {
+    max-height: 180px;
   }
 }
 
